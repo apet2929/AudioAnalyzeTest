@@ -5,21 +5,17 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
+import javafx.scene.control.Tooltip;
 import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.scene.media.Media;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -29,7 +25,9 @@ import static kotlin.io.ByteStreamsKt.readBytes;
 
 public class Main extends Application{
     public boolean start = false;
-    public double scale = 0.1;
+    public double hScale = 0.1;
+    public double vScale = 0.1;
+    public int numChildren = 3;
     public int[] test;
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -39,26 +37,44 @@ public class Main extends Application{
 //        System.out.println(Arrays.toString(exportAudio()));
 
 
-        Slider slider = new Slider(0.1,20,1);
+        Slider hScaleSlider = new Slider(0.1,20,1);
+        hScaleSlider.setTooltip(new Tooltip("Horizontal Scale"));
+        Slider vScaleSlider = new Slider(0.1,20,1);
+        vScaleSlider.setTooltip(new Tooltip("Vertical Scale"));
+        vScaleSlider.setLayoutX(200);
+
         Button openButton = new Button("Select Audio File");
         openButton.setLayoutX(400);
-        root.getChildren().add(slider);
+        root.getChildren().add(hScaleSlider);
+        root.getChildren().add(vScaleSlider);
         root.getChildren().add(openButton);
-        slider.valueProperty().addListener(new ChangeListener<Number>() {
+
+        hScaleSlider.valueProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov,
                                 Number old_val, Number new_val) {
-                scale = new_val.doubleValue();
+                hScale = new_val.doubleValue();
                 if(test != null) {
                     for (int i = 0; i < test.length; i++) {
-
-                        root.getChildren().set(i + 2, new Line(i / scale, 400 / 2 + test[i], i / scale, 400 / 2));
+                        root.getChildren().set(i + numChildren, new Line(i / hScale, 400 / 2 + (test[i] / vScale), i / hScale, 400 / 2));
                     }
 
                 }
-                System.out.println(scale);
+                System.out.println(hScale);
             }
         });
+        vScaleSlider.valueProperty().addListener(new ChangeListener<Number>() {
+            public void changed(ObservableValue<? extends Number> ov,
+                                Number old_val, Number new_val) {
+                vScale = new_val.doubleValue();
+                if(test != null) {
+                    for (int i = 0; i < test.length; i++) {
+                        root.getChildren().set(i + numChildren, new Line(i / hScale, 400 / 2 + (test[i] / vScale), i / hScale, 400 / 2));
+                    }
 
+                }
+                System.out.println(vScale);
+            }
+        });
 
 
         FileChooser fileChooser = new FileChooser();
@@ -69,7 +85,7 @@ public class Main extends Application{
                     test = exportAudio(fileChooser.showOpenDialog(primaryStage));
                     if(test.length != 0) {
                         for (int i = 0; i < test.length; i++) {
-                            root.getChildren().add(new Line(i / scale, 400 / 2 + test[i], i / scale, 400 / 2));
+                            root.getChildren().add(new Line(i / hScale, 400 / 2 + (test[i] / vScale), i / hScale, 400 / 2));
                         }
                     }
                 } catch (IOException e) {
@@ -81,7 +97,6 @@ public class Main extends Application{
 
         primaryStage.show();
     }
-
 
     public static void main(String[] args) {
         launch(args);
